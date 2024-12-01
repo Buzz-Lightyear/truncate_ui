@@ -1,49 +1,42 @@
 <script>
-  const BOARD_SIZE = 9;
+  const boardSize = 9;
+  const tilesPerPlayer = 7;
 
-  // Predefined positions for artifacts and homes
-  const artifacts = [
-    { x: 0, y: 0 },
-    { x: 8, y: 8 },
-  ];
-  const homes = [
-    { x: 0, y: 2 },
-    { x: 2, y: 0 },
-    { x: 6, y: 8 },
-    { x: 8, y: 6 },
-  ];
-
-  // Generate a board with artifacts and homes
-  const generateBoard = () => {
-    const board = Array.from({ length: BOARD_SIZE }, () =>
-      Array.from({ length: BOARD_SIZE }, () => ({ type: "empty" }))
+  const createBoard = () => {
+    const board = Array.from({ length: boardSize }, () =>
+      Array.from({ length: boardSize }, () => null)
     );
 
-    artifacts.forEach(({ x, y }) => {
-      board[x][y].type = "artifact";
-    });
+    // Artifact and Home positions
+    board[boardSize - 1][0] = { type: "artifact", player: 1 }; // Bottom-left for Player 1
+    board[0][boardSize - 1] = { type: "artifact", player: 2 }; // Top-right for Player 2
 
-    homes.forEach(({ x, y }) => {
-      board[x][y].type = "home";
-    });
+    board[boardSize - 1][2] = { type: "home", player: 1 }; // Bottom-left (near corner)
+    board[boardSize - 3][0] = { type: "home", player: 1 }; // Bottom-left (near edge)
+    board[2][boardSize - 1] = { type: "home", player: 2 }; // Top-right (near edge)
+    board[0][boardSize - 3] = { type: "home", player: 2 }; // Top-right (near corner)
 
     return board;
   };
 
-  const board = generateBoard();
+  const board1 = createBoard();
+  const board2 = createBoard();
 
-  // Player tiles
-  const player1Tiles = ["A", "B", "C", "D", "E", "F", "G"];
-  const player2Tiles = ["H", "I", "J", "K", "L", "M", "N"];
+  const player1Tiles = Array.from({ length: tilesPerPlayer }, () =>
+    String.fromCharCode(65 + Math.floor(Math.random() * 26))
+  );
+  const player2Tiles = Array.from({ length: tilesPerPlayer }, () =>
+    String.fromCharCode(65 + Math.floor(Math.random() * 26))
+  );
 </script>
 
 <style>
-  .board-container {
+  .game-container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    margin: 20px;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
   }
 
   .board {
@@ -51,83 +44,123 @@
     grid-template-columns: repeat(9, 50px);
     grid-template-rows: repeat(9, 50px);
     gap: 2px;
-    margin: 20px;
+    border: 2px solid #ccc;
+    position: relative;
   }
 
   .cell {
     width: 50px;
     height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
     background-color: #f0f0f0;
-    border: 1px solid #ccc;
-  }
-
-  .cell.artifact {
-    background-color: #d4af37;
-    color: white;
-  }
-
-  .cell.home {
-    background-color: #6495ed;
-    color: white;
-  }
-
-  .player-tiles {
     display: flex;
-    gap: 10px;
-    margin: 20px;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #ddd;
+    position: relative;
+    font-size: 14px;
+  }
+
+  /* Artifacts */
+  .artifact-player1 {
+    background-color: #ffd700;
+    background-image: url("/images/artifact.jpg");
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.7);
+  }
+
+  .artifact-player2 {
+    background-color: #ff6347;
+    background-image: url("/images/artifact.jpg");
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.7);
+  }
+
+  /* Homes */
+  .home-player1 {
+    background-color: #c2e59c;
+    background-image: url("/images/home.jpg");
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.7);
+  }
+
+  .home-player2 {
+    background-color: #f7a1a1;
+    background-image: url("/images/home.jpg");
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.7);
+  }
+
+  .tiles {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 10px;
   }
 
   .tile {
     width: 40px;
     height: 40px;
+    background-color: #d4d4d4;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     font-weight: bold;
-    background-color: #ffe4c4;
-    border: 1px solid #ccc;
     border-radius: 5px;
+    border: 1px solid #bbb;
+    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .board-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 </style>
 
-<div class="board-container">
-  <!-- Player 1 Tiles -->
-  <div class="player-tiles">
-    {#each player1Tiles as tile}
-      <div class="tile">{tile}</div>
-    {/each}
-  </div>
-
-  <!-- Main Board -->
-  <div class="board">
-    {#each board as row, x}
-      {#each row as cell, y}
-        <div class="cell {cell.type}">
-          {cell.type === "artifact" ? "A" : cell.type === "home" ? "H" : ""}
-        </div>
+<div class="game-container">
+  <!-- Player 1's Board -->
+  <div class="board-container">
+    <div class="board">
+      {#each board1 as row, i}
+        {#each row as cell, j}
+          <div
+            class="cell {cell?.type === 'artifact' && cell?.player === 1 ? 'artifact-player1' : ''} 
+                        {cell?.type === 'artifact' && cell?.player === 2 ? 'artifact-player2' : ''}
+                        {cell?.type === 'home' && cell?.player === 1 ? 'home-player1' : ''} 
+                        {cell?.type === 'home' && cell?.player === 2 ? 'home-player2' : ''}"
+          ></div>
+        {/each}
       {/each}
-    {/each}
-  </div>
-
-  <!-- Rotated Board for Player 2 -->
-  <div class="board" style="transform: rotate(180deg);">
-    {#each board as row, x}
-      {#each row as cell, y}
-        <div class="cell {cell.type}">
-          {cell.type === "artifact" ? "A" : cell.type === "home" ? "H" : ""}
-        </div>
+    </div>
+    <div class="tiles">
+      {#each player1Tiles as tile}
+        <div class="tile">{tile}</div>
       {/each}
-    {/each}
+    </div>
   </div>
 
-  <!-- Player 2 Tiles -->
-  <div class="player-tiles">
-    {#each player2Tiles as tile}
-      <div class="tile">{tile}</div>
-    {/each}
+  <!-- Player 2's Board -->
+  <div class="board-container">
+    <div class="board">
+      {#each board2.reverse() as row, i}
+        {#each row.reverse() as cell, j}
+          <div
+            class="cell {cell?.type === 'artifact' && cell?.player === 1 ? 'artifact-player1' : ''} 
+                        {cell?.type === 'artifact' && cell?.player === 2 ? 'artifact-player2' : ''}
+                        {cell?.type === 'home' && cell?.player === 1 ? 'home-player1' : ''} 
+                        {cell?.type === 'home' && cell?.player === 2 ? 'home-player2' : ''}"
+          ></div>
+        {/each}
+      {/each}
+    </div>
+    <div class="tiles">
+      {#each player2Tiles as tile}
+        <div class="tile">{tile}</div>
+      {/each}
+    </div>
   </div>
 </div>
